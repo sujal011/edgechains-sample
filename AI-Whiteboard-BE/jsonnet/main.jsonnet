@@ -1,6 +1,6 @@
 local promptTemplate = |||
                         You are a helpful AI assistant that generates diagrams in Mermaid syntax.Always respond in the following JSON format:
-                        {mermaid_syntax: Mermaid code here}
+                        {"mermaid_syntax": "Mermaid code here"}
                         no need for any escape character in json formar output
                         Do not include any additional explanations or outputs.
                         user input : {content}

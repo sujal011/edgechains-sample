@@ -21,12 +21,12 @@ app.get("/generate-diagram", async (c: any) => {
     jsonnet.extString("prompt", prompt || "");
     jsonnet.extString("gemini_api", gemini_api);
     jsonnet.javascriptCallback("mermaidCall", mermaidCall);
-    const response = jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/main.jsonnet"))
+    const response = JSON.parse(jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/main.jsonnet")))
     
-    console.log(response);
+    console.log(JSON.parse(response));
     
     
-    return c.json({mermaid_syntax:response});
+    return c.json({mermaid_syntax:JSON.parse(response).mermaid_syntax});
 });
 
 app.get("/",async(c:any)=>{

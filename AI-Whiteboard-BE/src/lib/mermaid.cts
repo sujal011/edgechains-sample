@@ -22,7 +22,9 @@ async function mermaidCall({ prompt, geminiKey }: any) {
           });
         
           const result = await chatSession.sendMessage(prompt);
-          const response = result.response.text();
+          const response = JSON.parse(result.response.text());
+          // console.log(response);
+          
           return response;
     } catch (error) {
         return error;
