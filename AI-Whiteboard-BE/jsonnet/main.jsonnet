@@ -1,27 +1,21 @@
 local promptTemplate = |||
-                        You are an AI assistant that generates diagrams in Mermaid syntax.
-                        Always respond in the following JSON format:
-                        {"mermaid_syntax": "Mermaid code here"}
-                        
-                        For example, if asked to draw a flowchart, your response might be:
-                        {"mermaid_syntax": "graph TD\\nA[Start] --> B[Login]\\nB -->|Success| C[Dashboard]\\nB -->|Fail| D[Error]"}
-                        
+                        You are a helpful AI assistant that generates diagrams in Mermaid syntax.Always respond in the following JSON format:
+                        {mermaid_syntax: Mermaid code here}
+                        no need for any escape character in json formar output
                         Do not include any additional explanations or outputs.
-                        
-                        user input: {content}
-                        
+                        user input : {content}
                        |||;
 
-
-local prompt = std.extVar("prompt");
-// local task = "go to" + pageUrl + "and scrap the hole page text";
+local content = std.extVar("prompt");
 local gemini_api = std.extVar('gemini_api');
+
 local getFullPrompt(content) = 
-    local promptWithContent = std.strReplace(promptTemplate,'{content}', content + "\n");
+    local promptWithContent = std.strReplace(promptTemplate, '{content}', content);
     promptWithContent;
 
 local main(prompt) =
-local response = arakoo.native("mermaidCall")({ prompt: prompt, geminiKey: gemini_api });
+    local response = arakoo.native("mermaidCall")({ prompt: prompt, geminiKey: gemini_api });
     response;
 
-main(getFullPrompt(prompt))
+
+main(getFullPrompt(content))
