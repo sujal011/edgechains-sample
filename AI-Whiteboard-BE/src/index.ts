@@ -18,6 +18,7 @@ app.get("/generate-diagram", async (c: any) => {
     const gemini_api = JSON.parse(
         jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/secrets.jsonnet"))
     ).gemini_api;
+    console.log(gemini_api);
     jsonnet.extString("prompt", prompt || "");
     jsonnet.extString("gemini_api", gemini_api);
     jsonnet.javascriptCallback("mermaidCall", mermaidCall);

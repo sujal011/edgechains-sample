@@ -1,14 +1,14 @@
-const { GeminiAI } = require("@arakoodev/edgechains.js");
-import { z } from "zod";
+const { GeminiAI } = require("@arakoodev/edgechains.js/ai");
 
-const schema = z.object({
-    mermaid_syntax: z.string().describe("The mermaid syntax for the follwing prompt"),
-});
 
 async function mermaidCall({ prompt, geminiKey }: any) {
     try {
         const gemini = new GeminiAI({ apiKey: geminiKey });
-        let res = await gemini.zodSchemaResponse({ prompt, schema: schema });
+        let res = await gemini.chat({
+            model:"gemini-2.0-flash-exp",
+            responseType:"application/json",
+            prompt:prompt
+        });
         return JSON.stringify(res);
     } catch (error) {
         return error;

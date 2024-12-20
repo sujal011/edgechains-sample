@@ -1,3 +1,4 @@
 node_modules
 dist
 jsonnet/secrets.jsonnet
+.env

@@ -21,7 +21,7 @@ local getFullPrompt(content) =
     promptWithContent;
 
 local main(prompt) =
-local response = arakoo.native("mermaidCall")({ prompt: prompt, geminiKey: key });
+local response = arakoo.native("mermaidCall")({ prompt: prompt, geminiKey: gemini_api });
     response;
 
 main(getFullPrompt(prompt))
