@@ -8,7 +8,7 @@ In this project, I have developed APIs that integrate seamlessly with the fronte
 These functionalities are powered by the Gemini API, which has provided a robust foundation for understanding and implementing Edgechain concepts. 
 However, there are areas where improvements can be made to enhance the user experience and functionality.
 
-[Watch the demo video](video.mp4)
+[![Watch the demo video](https://raw.githubusercontent.com/sujal011/edgechain-sample/main/AI-Whiteboard-BE/thumbnail.png)](https://raw.githubusercontent.com/sujal011/edgechains-sample/main/AI-Whiteboard-BE/video.mp4)
 
 
 
