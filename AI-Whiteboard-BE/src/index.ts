@@ -11,6 +11,7 @@ const app = server.createApp();
 const jsonnet = new Jsonnet();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const mermaidCall = createSyncRPC(path.join(__dirname, "./lib/mermaid.cjs"));
+const askAI = createSyncRPC(path.join(__dirname, "./lib/askAi.cjs"));
 
 app.get("/generate-diagram", async (c: any) => {
   
@@ -27,6 +28,22 @@ app.get("/generate-diagram", async (c: any) => {
     
     
     return c.json({mermaid_syntax:JSON.parse(response).mermaid_syntax});
+});
+app.get("/ask-ai", async (c: any) => {
+    
+    const prompt = c.req.query("question");
+    const gemini_api = JSON.parse(
+        jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/secrets.jsonnet"))
+    ).gemini_api;
+    jsonnet.extString("prompt", prompt || "");
+    jsonnet.extString("gemini_api", gemini_api);
+    jsonnet.javascriptCallback("askAI", askAI);
+    const response = JSON.parse(jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/askAi.jsonnet")))
+    
+    console.log(JSON.parse(response));
+    
+    
+    return c.json({result:JSON.parse(response).result});
 });
 
 app.get("/",async(c:any)=>{
