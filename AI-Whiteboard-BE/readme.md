@@ -3,7 +3,7 @@ Welcome to this walkthrough of our project where we’ve built APIs using EdgeCh
 
 ---
 
-**Demo of product**:
+**Video Explanation**:
 [![Watch the video](https://raw.githubusercontent.com/sujal011/edgechains-sample/main/AI-Whiteboard-BE/thumbnail.png)](https://youtu.be/gHTH03tIuBc)
 
 **Step 1: Creating a Server with EdgeChain**  
