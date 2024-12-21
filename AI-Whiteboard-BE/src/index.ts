@@ -2,6 +2,7 @@ import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
 import Jsonnet from "@arakoodev/jsonnet";
 import {createSyncRPC} from "@arakoodev/edgechains.js/sync-rpc";
 
+
 import fileURLToPath from "file-uri-to-path";
 import path from "path";
 const server = new ArakooServer();
@@ -12,6 +13,7 @@ const jsonnet = new Jsonnet();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const mermaidCall = createSyncRPC(path.join(__dirname, "./lib/mermaid.cjs"));
 const askAI = createSyncRPC(path.join(__dirname, "./lib/askAi.cjs"));
+const vision = createSyncRPC(path.join(__dirname, "./lib/vision.cjs"));
 
 app.get("/generate-diagram", async (c: any) => {
   
@@ -44,6 +46,28 @@ app.get("/ask-ai", async (c: any) => {
     
     
     return c.json({result:JSON.parse(response).result});
+});
+app.post("/calculate", async (c: any) => {
+    
+    const {image} = await c.req.json();
+    
+    const gemini_api = JSON.parse(
+        jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/secrets.jsonnet"))
+    ).gemini_api;
+    
+    jsonnet.extString("image", image || "");
+    jsonnet.extString("gemini_api", gemini_api);
+    jsonnet.javascriptCallback("vision", vision);
+    const response = JSON.parse(jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/vision.jsonnet")))
+    console.log(response);
+    
+    console.log(JSON.parse(response));
+    
+    
+    return c.json({
+        expr:JSON.parse(response).expr,
+        result:JSON.parse(response).result,
+    });
 });
 
 app.get("/",async(c:any)=>{
