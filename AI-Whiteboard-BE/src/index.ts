@@ -59,7 +59,7 @@ app.post("/calculate", async (c: any) => {
     jsonnet.extString("gemini_api", gemini_api);
     jsonnet.javascriptCallback("vision", vision);
     const response = JSON.parse(jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/vision.jsonnet")))
-    console.log(response);
+    console.log(response.result);
     
     console.log(JSON.parse(response));
     

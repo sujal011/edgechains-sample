@@ -24,12 +24,14 @@ async function vision({ imageUri, geminiKey }: any) {
         const fileManager = new GoogleAIFileManager(geminiKey);
         const [mimePart, base64Part] = imageUri.split(";base64,");
         const mimeType = mimePart.replace("data:", "");
-  const outputPath = path.join(__dirname, "decoded_image.png");
-  saveBase64Image(base64Part, outputPath);
+        const outputPath = path.join(__dirname, "decoded_image.png");
+        saveBase64Image(base64Part, outputPath);
 
-  const files = [
-    await uploadToGemini(fileManager,outputPath, mimeType),
-  ];
+        const files = [
+          await uploadToGemini(fileManager,outputPath,mimeType),
+        ];
+
+  
         const gemini = new GoogleGenerativeAI(geminiKey);
         const model = gemini.getGenerativeModel({
             model: "gemini-2.0-flash-exp",
@@ -59,9 +61,8 @@ async function vision({ imageUri, geminiKey }: any) {
             ],
           });
         
-          const result = await chatSession.sendMessage("");
+          const result = await chatSession.sendMessage(" ");
           const response = JSON.parse(result.response.text());
-          console.log("gemini response: ",response);
           
           
           return response;
