@@ -3,6 +3,9 @@ Welcome to this walkthrough of our project where we’ve built APIs using EdgeCh
 
 ---
 
+**Video Explanation**:
+
+
 **Step 1: Creating a Server with EdgeChain**  
 We start by creating a server using EdgeChain, a lightweight and efficient framework that leverages Hono.js for routing.  
 
