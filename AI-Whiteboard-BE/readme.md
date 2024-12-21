@@ -1,42 +1,147 @@
-## Overview
-In this project, I have developed APIs that integrate seamlessly with the frontend, enabling the following key functionalities:
+**Introduction**  
+Welcome to this walkthrough of our project where we’ve built APIs using EdgeChain with a Hono.js server. These APIs power a frontend by enabling interactions like diagram generation, AI question-answering, and image-based calculations. Let’s dive into how we’ve structured and implemented these functionalities.
 
-1. **Generate Mermaid Syntax**: Allows users to generate diagrams dynamically using Mermaid.js syntax.
-2. **Analyze Images and Answer Questions**: Utilizes advanced AI to analyze images and answer physics, math, or other image-based questions, including whiteboard drawings.
-3. **Assist with Note-taking**: Provides tools for generating notes efficiently, aiding productivity and organization.
+---
 
-These functionalities are powered by the Gemini API, which has provided a robust foundation for understanding and implementing Edgechain concepts. 
-However, there are areas where improvements can be made to enhance the user experience and functionality.
+**Step 1: Creating a Server with EdgeChain**  
+We start by creating a server using EdgeChain, a lightweight and efficient framework that leverages Hono.js for routing.  
 
-[![Watch the demo video](https://raw.githubusercontent.com/sujal011/edgechains-sample/main/AI-Whiteboard-BE/thumbnail.png)](https://raw.githubusercontent.com/sujal011/edgechains-sample/main/AI-Whiteboard-BE/video.mp4)
+```javascript
+import { ArakooServer } from "@arakoodev/edgechains.js/arakooserver";
+const server = new ArakooServer();
+const app = server.createApp();
+```
 
+Here, `ArakooServer` initializes the server, and `createApp()` helps define application-level routes.
 
+---
 
-## Next Steps
-To address the limitations and further enhance the project, I plan to implement the following updates:
+**Step 2: Dependencies and Utilities**  
+We import several utilities to enhance functionality:  
+- **Jsonnet** for template-based computations.  
+- **SyncRPC** for converting asynchronous tasks into synchronous ones.  
+- **Path utilities** to handle file operations.
 
-### 1. Custom System Prompt Template
-- Design a **custom system prompt template** to optimize interactions and responses.
-- Leverage the effectiveness of system prompts to guide AI models for more accurate and relevant outputs.
+```javascript
+import Jsonnet from "@arakoodev/jsonnet";
+import { createSyncRPC } from "@arakoodev/edgechains.js/sync-rpc";
+import path from "path";
+const jsonnet = new Jsonnet();
+```
 
-### 2. System Prompt Integration for Developers
-- Introduce an option for developers to include custom **system prompts** in AI models.
-- Ensure compatibility and flexibility for various AI models to enhance their usability.
+These tools allow us to evaluate JSON-like templates and communicate with external scripts efficiently.
 
-### 3. Multimodal Support for Chat Models
-- Extend **multimodal support** across all chat models(that has multimodal functionality)
-- Ensure smooth integration for a holistic user experience.
+---
 
-## Improving Documentation
-To maintain clarity and professionalism, I will revise the README.md file to:
+**Step 3: Understanding the `/generate-diagram` API**  
+Let’s focus on the `app.get("/generate-diagram")` route, which generates diagrams in Mermaid syntax.  
 
-- Provide **better formatting** for readability.
-- Clearly outline the existing functionalities and their use cases.
-- Detail the new updates with a focus on:
-  - The custom system prompt template.
-  - System prompt integration for developers.
-  - Multimodal support in chat models.
+**Step 3.1: Retrieving Inputs**  
+First, we retrieve the `prompt` from the request query.  
+```javascript
+const prompt = c.req.query("prompt");
+```
 
-## Conclusion
-These enhancements aim to make the project more developer-friendly and extend its capabilities, ensuring a comprehensive and intuitive experience. By focusing on system prompts and multimodal support, the project will better align with cutting-edge AI advancements, providing greater value to users and developers alike.
+**Step 3.2: Loading API Credentials**  
+Next, we load the API key securely from a Jsonnet file.  
+```javascript
+const gemini_api = JSON.parse(
+    jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/secrets.jsonnet"))
+).gemini_api;
+```
+
+**Step 3.3: Extending Variables for Jsonnet**  
+We pass the `prompt` and API key into Jsonnet using `extString`.  
+```javascript
+jsonnet.extString("prompt", prompt || "");
+jsonnet.extString("gemini_api", gemini_api);
+```
+
+**Step 3.4: Using `mermaidCall`**  
+A synchronous RPC call, `mermaidCall`, generates the Mermaid diagram syntax. This RPC is linked to a CommonJS module, which we'll explain later.  
+```javascript
+jsonnet.javascriptCallback("mermaidCall", mermaidCall);
+```
+
+**Step 3.5: Evaluating the Jsonnet File**  
+The Jsonnet file processes the prompt and API key to produce the output.  
+```javascript
+const response = JSON.parse(
+    jsonnet.evaluateFile(path.join(__dirname, "../jsonnet/main.jsonnet"))
+);
+```
+
+Finally, the response is sent back in JSON format.  
+```javascript
+return c.json({ mermaid_syntax: JSON.parse(response).mermaid_syntax });
+```
+
+---
+
+**Step 4: The Jsonnet Template**  
+The Jsonnet file structures the logic for generating diagrams.  
+
+- **Prompt Template**: Defines the behavior of the AI assistant and ensures responses follow a JSON format.  
+```jsonnet
+local promptTemplate = |||
+    You are a helpful AI assistant that generates diagrams in Mermaid syntax...
+|||;
+```
+
+- **Dynamic Variables**: The `content` variable is dynamically inserted into the prompt.  
+```jsonnet
+local content = std.extVar("prompt");
+local gemini_api = std.extVar("gemini_api");
+```
+
+- **Processing the Prompt**: A function formats the full prompt.  
+```jsonnet
+local getFullPrompt(content) = 
+    local promptWithContent = std.strReplace(promptTemplate, '{content}', content);
+    promptWithContent;
+```
+
+- **Generating the Response**: The `mermaidCall` RPC processes the prompt and API key to generate the final diagram.  
+```jsonnet
+main(getFullPrompt(content));
+```
+
+---
+
+**Step 5: Converting `mermaidCall` to Sync Using SyncRPC**  
+Now, let’s discuss the implementation of `mermaidCall`. This function uses Google Generative AI to create Mermaid syntax.
+
+**Step 5.1: Function Overview**  
+The function initializes the Google Generative AI model using the provided API key and generates output based on the user’s prompt.  
+```javascript
+async function mermaidCall({ prompt, geminiKey }) {
+    const gemini = new GoogleGenerativeAI(geminiKey);
+    const model = gemini.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const chatSession = model.startChat({ generationConfig });
+    const result = await chatSession.sendMessage(prompt);
+    return JSON.parse(result.response.text());
+}
+```
+
+**Step 5.2: Sync Conversion**  
+With `SyncRPC`, this asynchronous process is transformed into a synchronous operation.  
+```javascript
+const mermaidCall = createSyncRPC(path.join(__dirname, "./lib/mermaid.cjs"));
+```
+
+This ensures seamless integration with Jsonnet’s JavaScript callback mechanism.
+
+---
+
+**Step 6: Additional APIs**  
+Similarly, the `/ask-ai` and `/calculate` routes follow the same flow, interacting with Jsonnet and using SyncRPC for tasks like answering questions and performing image-based calculations.
+
+---
+
+**Conclusion**  
+In this project, we combined EdgeChain’s Hono.js server, Jsonnet for template-based computations, and SyncRPC for efficient asynchronous handling. These APIs form the backbone of a frontend capable of dynamic diagram generation, AI question answering, and more.  
+
+We hope this explanation helps you understand the flow and implementation of EdgeChain.
+
+--- 
 
